@@ -144,6 +144,92 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Virtual Mirror Demo Section */}
+      <section className="py-20 bg-muted/20">
+        <div className="container px-4">
+          <h2 className="text-4xl font-bold text-center mb-12 gradient-primary bg-clip-text text-transparent">
+            Experience the Virtual Mirror
+          </h2>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Mirror Interface */}
+              <div className="relative">
+                <div className="aspect-[3/4] bg-gradient-to-br from-background to-muted border-2 border-primary/20 rounded-2xl shadow-card overflow-hidden">
+                  <div className="h-full bg-gradient-to-br from-purple-900/20 to-blue-900/20 flex items-center justify-center relative">
+                    <div className="absolute inset-4 border-2 border-dashed border-primary/30 rounded-xl flex items-center justify-center">
+                      <div className="text-center">
+                        <Camera className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
+                        <p className="text-lg font-medium text-foreground mb-2">Virtual Mirror Active</p>
+                        <p className="text-muted-foreground">Upload photo or start video to begin</p>
+                      </div>
+                    </div>
+                    {/* Simulated Mirror Effects */}
+                    <div className="absolute top-4 left-4 w-8 h-8 bg-primary/20 rounded-full animate-ping"></div>
+                    <div className="absolute top-6 right-8 w-6 h-6 bg-accent/20 rounded-full animate-pulse delay-300"></div>
+                    <div className="absolute bottom-8 left-8 w-4 h-4 bg-primary/30 rounded-full animate-bounce delay-500"></div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background/80 to-transparent flex items-center justify-center">
+                    <div className="flex gap-2">
+                      <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                      <div className="w-3 h-3 bg-accent rounded-full animate-pulse delay-200"></div>
+                      <div className="w-3 h-3 bg-primary rounded-full animate-pulse delay-400"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Camera className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">Photo Upload</h3>
+                    <p className="text-muted-foreground">
+                      Upload your photo and instantly see how different outfits look on you with our advanced AI fitting technology.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                    <Video className="h-6 w-6 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">Live Video Mode</h3>
+                    <p className="text-muted-foreground">
+                      Experience real-time virtual try-on with live video streaming for the most realistic fitting experience.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">Smart Fitting</h3>
+                    <p className="text-muted-foreground">
+                      Our AI analyzes your body measurements and suggests the perfect fit for every garment.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <Link to="/try-on">
+                    <Button size="lg" className="gradient-primary hover:shadow-glow transition-all btn-glow">
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Try It Now
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 gradient-hero">
         <div className="container px-4 text-center">
