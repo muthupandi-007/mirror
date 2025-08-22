@@ -35,10 +35,10 @@ const About = () => {
   ];
 
   const team = [
-    { name: "Sarah Chen", role: "CEO & Co-founder", expertise: "Fashion Tech Innovation" },
-    { name: "Marcus Rodriguez", role: "CTO", expertise: "AI & Machine Learning" },
-    { name: "Emily Watson", role: "Head of Design", expertise: "UX/UI & Fashion Design" },
-    { name: "David Kim", role: "Lead Developer", expertise: "Computer Vision & AR" }
+    { name: "Dhaniska Sri", role: "Team Leader", expertise: "Fashion Tech Innovation" },
+    { name: "Ram Prasath", role: "Team Member", expertise: "AI & Machine Learning" },
+    { name: "Bushra", role: "Team Member", expertise: "UX/UI & Fashion Design" },
+    { name: "Akash", role: "Team Member", expertise: "Computer Vision & AR" }
   ];
 
   return (
