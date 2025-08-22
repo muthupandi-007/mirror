@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,8 +10,15 @@ const TryOn = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedOutfit, setSelectedOutfit] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [tabValue, setTabValue] = useState("upload");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [overlayScale, setOverlayScale] = useState(1);
+  const [overlayRotation, setOverlayRotation] = useState(0);
+  const [overlayX, setOverlayX] = useState(0);
+  const [overlayY, setOverlayY] = useState(0);
+  const [overlayOpacity, setOverlayOpacity] = useState(0.8);
 
   const sampleOutfits = [
     { id: 1, name: "Summer Dress", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300&h=400&fit=crop", category: "women" },
@@ -33,17 +40,11 @@ const TryOn = () => {
   };
 
   const handleTryOn = () => {
-    if (!selectedImage || !selectedOutfit) {
-      toast("Please upload a photo and select an outfit first!");
+    if (!selectedOutfit || (tabValue === 'upload' && !selectedImage)) {
+      toast("Select an outfit and provide a photo or switch to Video mode.");
       return;
     }
-
-    setIsProcessing(true);
-    // Simulate processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      toast("Try-on complete! See your virtual fitting result.");
-    }, 3000);
+    toast("Outfit applied. Adjust sliders to fit.");
   };
 
   const handleReset = () => {
@@ -52,11 +53,50 @@ const TryOn = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const startVideo = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast("Camera not supported on this device");
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (error) {
+      toast("Unable to access camera. Please allow permission.");
+    }
+  };
+
+  const stopVideo = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  useEffect(() => {
+    if (tabValue === "video") {
+      startVideo();
+    } else {
+      stopVideo();
+    }
+    return () => {
+      stopVideo();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabValue]);
+
   return (
     <Layout>
       <div className="container px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Virtual Try-On Mirror
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -77,7 +117,7 @@ const TryOn = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Tabs defaultValue="upload" className="w-full">
+              <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="upload">Photo Upload</TabsTrigger>
                   <TabsTrigger value="video">Video Mode</TabsTrigger>
@@ -91,11 +131,26 @@ const TryOn = () => {
                     >
                       {selectedImage ? (
                         <div className="space-y-4">
-                          <img 
-                            src={selectedImage} 
-                            alt="Uploaded" 
-                            className="mx-auto max-h-64 rounded-lg shadow-card"
-                          />
+                          <div className="relative mx-auto max-w-full rounded-lg overflow-hidden shadow-card">
+                            <img 
+                              src={selectedImage} 
+                              alt="Uploaded" 
+                              className="mx-auto max-h-64"
+                            />
+                            {selectedOutfit && (
+                              <img
+                                src={sampleOutfits.find(o => o.id.toString() === selectedOutfit)?.image}
+                                alt="Selected outfit overlay"
+                                className="absolute top-1/2 left-1/2 pointer-events-none"
+                                style={{
+                                  transform: `translate(-50%, -50%) translate(${overlayX}px, ${overlayY}px) scale(${overlayScale}) rotate(${overlayRotation}deg)`,
+                                  opacity: overlayOpacity,
+                                  maxWidth: '70%',
+                                  maxHeight: '70%'
+                                }}
+                              />
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">Click to change photo</p>
                         </div>
                       ) : (
@@ -115,18 +170,86 @@ const TryOn = () => {
                       onChange={handleImageUpload}
                       className="hidden"
                     />
+                    {selectedImage && selectedOutfit && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Scale</label>
+                          <input type="range" min="0.5" max="2" step="0.01" value={overlayScale} onChange={(e) => setOverlayScale(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Rotation</label>
+                          <input type="range" min="-45" max="45" step="1" value={overlayRotation} onChange={(e) => setOverlayRotation(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Horizontal Offset</label>
+                          <input type="range" min="-200" max="200" step="1" value={overlayX} onChange={(e) => setOverlayX(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Vertical Offset</label>
+                          <input type="range" min="-200" max="200" step="1" value={overlayY} onChange={(e) => setOverlayY(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <label className="text-sm text-muted-foreground">Opacity</label>
+                          <input type="range" min="0.3" max="1" step="0.01" value={overlayOpacity} onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="video">
                   <div className="space-y-4">
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                      <Video className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-foreground font-medium mb-2">Video Mode Coming Soon</p>
-                      <p className="text-sm text-muted-foreground">
-                        Real-time video try-on will be available in the next update
-                      </p>
+                    <div className="relative border-2 border-dashed border-border rounded-lg overflow-hidden">
+                      <div className="bg-black/70 text-white text-sm px-3 py-2 absolute top-2 left-2 rounded-md z-20">
+                        {selectedOutfit ? "Live preview with selected outfit" : "Select an outfit to preview"}
+                      </div>
+                      <div className="aspect-[3/4] w-full relative">
+                        <video
+                          ref={videoRef}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          muted
+                          playsInline
+                          autoPlay
+                        />
+                        {selectedOutfit && (
+                          <img
+                            src={sampleOutfits.find(o => o.id.toString() === selectedOutfit)?.image}
+                            alt="Selected outfit overlay"
+                            className="absolute top-1/2 left-1/2 pointer-events-none"
+                            style={{
+                              transform: `translate(-50%, -50%) translate(${overlayX}px, ${overlayY}px) scale(${overlayScale}) rotate(${overlayRotation}deg)`,
+                              opacity: overlayOpacity,
+                              maxWidth: '70%',
+                              maxHeight: '70%'
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
+                    {selectedOutfit && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Scale</label>
+                          <input type="range" min="0.5" max="2" step="0.01" value={overlayScale} onChange={(e) => setOverlayScale(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Rotation</label>
+                          <input type="range" min="-45" max="45" step="1" value={overlayRotation} onChange={(e) => setOverlayRotation(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Horizontal Offset</label>
+                          <input type="range" min="-200" max="200" step="1" value={overlayX} onChange={(e) => setOverlayX(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm text-muted-foreground">Vertical Offset</label>
+                          <input type="range" min="-200" max="200" step="1" value={overlayY} onChange={(e) => setOverlayY(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <label className="text-sm text-muted-foreground">Opacity</label>
+                          <input type="range" min="0.3" max="1" step="0.01" value={overlayOpacity} onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))} className="w-full" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
               </Tabs>
@@ -163,6 +286,11 @@ const TryOn = () => {
                       src={outfit.image}
                       alt={outfit.name}
                       className="w-full h-32 object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      width="300"
+                      height="128"
+                      sizes="(min-width:1024px) 50vw, 100vw"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2">
                       <p className="text-sm font-medium">{outfit.name}</p>
@@ -185,7 +313,7 @@ const TryOn = () => {
         <div className="flex justify-center gap-4 mt-8">
           <Button
             onClick={handleTryOn}
-            disabled={!selectedImage || !selectedOutfit || isProcessing}
+            disabled={!selectedOutfit || (tabValue === 'upload' && !selectedImage) || isProcessing}
             size="lg"
             className="gradient-primary hover:shadow-glow transition-all btn-glow px-8"
           >
