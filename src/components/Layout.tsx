@@ -39,10 +39,10 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/home" className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-                <Camera className="h-5 w-5 text-white" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Camera className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="font-bold text-xl gradient-primary bg-clip-text text-transparent hidden sm:inline-block">
+              <span className="font-bold text-xl text-foreground hidden sm:inline-block">
                 Virtual Try-On
               </span>
             </Link>
@@ -55,7 +55,7 @@ const Layout = ({ children }: LayoutProps) => {
                     variant={isActive(item.href) ? "default" : "ghost"}
                     className={`flex items-center space-x-2 ${
                       isActive(item.href) 
-                        ? "gradient-primary text-white shadow-glow" 
+                        ? "bg-primary text-primary-foreground shadow-glow" 
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -109,7 +109,7 @@ const Layout = ({ children }: LayoutProps) => {
                     variant={isActive(item.href) ? "default" : "ghost"}
                     className={`w-full justify-start space-x-2 ${
                       isActive(item.href) 
-                        ? "gradient-primary text-white" 
+                        ? "bg-primary text-primary-foreground" 
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -142,10 +142,10 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 gradient-primary rounded-md flex items-center justify-center">
-                  <Camera className="h-4 w-4 text-white" />
+                <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
+                  <Camera className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="font-bold gradient-primary bg-clip-text text-transparent">
+                <span className="font-bold text-foreground">
                   Virtual Try-On
                 </span>
               </div>
