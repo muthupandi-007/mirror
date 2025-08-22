@@ -68,7 +68,7 @@ const Catalog = () => {
       <div className="container px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Fashion Catalog
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -112,6 +112,11 @@ const Catalog = () => {
                           src={product.image}
                           alt={product.name}
                           className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+                          loading="lazy"
+                          decoding="async"
+                          width="400"
+                          height="256"
+                          sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
                         />
                         <div className="absolute top-2 right-2 flex gap-2">
                           <Button
