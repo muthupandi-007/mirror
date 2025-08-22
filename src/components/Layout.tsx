@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   Camera, 
@@ -12,6 +12,8 @@ import {
   User
 } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,6 +21,8 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
@@ -30,6 +34,12 @@ const Layout = ({ children }: LayoutProps) => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    toast("Logged out successfully");
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,15 +78,25 @@ const Layout = ({ children }: LayoutProps) => {
 
             {/* User Menu */}
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <User className="h-5 w-5" />
-              </Button>
-              <Link to="/">
-                <Button variant="outline" size="sm" className="border-border hover:bg-secondary">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>Welcome, {user?.name}</span>
+              </div>
+              <Link to="/profile">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
                 </Button>
               </Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-border hover:bg-secondary"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -99,6 +119,12 @@ const Layout = ({ children }: LayoutProps) => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-card">
             <div className="container px-4 py-4 space-y-3">
+              {/* User Info */}
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground pb-2 border-b border-border">
+                <User className="h-4 w-4" />
+                <span>Welcome, {user?.name}</span>
+              </div>
+              
               {navigation.map((item) => (
                 <Link 
                   key={item.name} 
@@ -118,13 +144,27 @@ const Layout = ({ children }: LayoutProps) => {
                   </Button>
                 </Link>
               ))}
+              
+              {/* Profile Link */}
+              <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Button>
+              </Link>
+              
               <div className="pt-4 border-t border-border">
-                <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full border-border">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-border"
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
               </div>
             </div>
           </div>
