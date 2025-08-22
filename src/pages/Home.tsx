@@ -19,7 +19,7 @@ const Home = () => {
       >
         <div className="container px-4 py-20">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-foreground">
               Virtual Try-On Mirror
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -47,7 +47,7 @@ const Home = () => {
       {/* Features Section */}
       <section className="py-20 bg-background">
         <div className="container px-4">
-          <h2 className="text-4xl font-bold text-center mb-12 gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold text-center mb-12 text-foreground">
             Revolutionary Features
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -147,7 +147,7 @@ const Home = () => {
       {/* Virtual Mirror Demo Section */}
       <section className="py-20 bg-muted/20">
         <div className="container px-4">
-          <h2 className="text-4xl font-bold text-center mb-12 gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold text-center mb-12 text-foreground">
             Experience the Virtual Mirror
           </h2>
           <div className="max-w-6xl mx-auto">
@@ -155,7 +155,7 @@ const Home = () => {
               {/* Mirror Interface */}
               <div className="relative">
                 <div className="aspect-[3/4] bg-gradient-to-br from-background to-muted border-2 border-primary/20 rounded-2xl shadow-card overflow-hidden">
-                  <div className="h-full bg-gradient-to-br from-purple-900/20 to-blue-900/20 flex items-center justify-center relative">
+                  <div className="h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
                     <div className="absolute inset-4 border-2 border-dashed border-primary/30 rounded-xl flex items-center justify-center">
                       <div className="text-center">
                         <Camera className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
