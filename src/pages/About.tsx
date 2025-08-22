@@ -46,7 +46,7 @@ const About = () => {
       <div className="container px-4 py-8">
         {/* Hero Section */}
         <section className="text-center mb-16">
-          <h1 className="text-5xl font-bold gradient-primary bg-clip-text text-transparent mb-6">
+          <h1 className="text-5xl font-bold text-foreground mb-6">
             About Virtual Try-On Mirror
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -94,7 +94,7 @@ const About = () => {
 
         {/* Statistics */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
             Our Impact
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -113,7 +113,7 @@ const About = () => {
 
         {/* Features */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
             What Makes Us Different
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
@@ -137,7 +137,7 @@ const About = () => {
 
         {/* Team Section */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold text-center mb-8 text-foreground">
             Meet Our Team
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
