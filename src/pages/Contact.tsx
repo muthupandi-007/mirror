@@ -95,7 +95,7 @@ const Contact = () => {
       <div className="container px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Get in Touch
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
