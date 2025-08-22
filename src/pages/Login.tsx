@@ -39,7 +39,7 @@ const Login = () => {
     <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold text-foreground">
             Virtual Try-On Mirror
           </h1>
           <p className="text-muted-foreground mt-2">
