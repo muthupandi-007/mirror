@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import Layout from "@/components/Layout";
 
 const Catalog = () => {
   const { category } = useParams();
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(category || "women");
   const [sortBy, setSortBy] = useState("popular");
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
@@ -59,8 +60,8 @@ const Catalog = () => {
   };
 
   const handleTryOn = (product: any) => {
-    toast(`Starting try-on for ${product.name}...`);
-    // In a real app, this would navigate to try-on with product data
+    // Navigate to try-on and pass garment image URL via router state
+    navigate('/try-on', { state: { garmentUrl: product.image } });
   };
 
   return (
@@ -131,15 +132,13 @@ const Catalog = () => {
                           </Button>
                         </div>
                         <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <Link to="/try-on">
-                            <Button 
-                              className="gradient-primary hover:shadow-glow btn-glow"
-                              onClick={() => handleTryOn(product)}
-                            >
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Try On
-                            </Button>
-                          </Link>
+                          <Button 
+                            className="gradient-primary hover:shadow-glow btn-glow"
+                            onClick={() => handleTryOn(product)}
+                          >
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Try On
+                          </Button>
                         </div>
                       </div>
                     </CardHeader>
