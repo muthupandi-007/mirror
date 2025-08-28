@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "runtime": "nodejs18"
+  },
   "hosting": {
     "public": "dist",
     "ignore": [
@@ -8,9 +11,16 @@
     ],
     "rewrites": [
       {
+        "source": "/try-on",
+        "function": "tryOn"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
+    ],
+    "predeploy": [
+      "npm run build"
     ]
   }
 }
