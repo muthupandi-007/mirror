@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Camera, Video, Sparkles, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import { postTryOn, dataURLToFile } from "@/lib/api";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const TryOn = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -19,6 +21,13 @@ const TryOn = () => {
   const [overlayX, setOverlayX] = useState(0);
   const [overlayY, setOverlayY] = useState(0);
   const [overlayOpacity, setOverlayOpacity] = useState(0.8);
+  const [resultImage, setResultImage] = useState<string | null>(null);
+  const garmentFileInputRef = useRef<HTMLInputElement>(null);
+  const [garmentFile, setGarmentFile] = useState<File | null>(null);
+  const [garmentUrlInput, setGarmentUrlInput] = useState<string>("");
+  const [garmentPreview, setGarmentPreview] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation() as any;
 
   const sampleOutfits = [
     { id: 1, name: "Summer Dress", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=300&h=400&fit=crop", category: "women" },
@@ -39,12 +48,81 @@ const TryOn = () => {
     }
   };
 
-  const handleTryOn = () => {
-    if (!selectedOutfit || (tabValue === 'upload' && !selectedImage)) {
-      toast("Select an outfit and provide a photo or switch to Video mode.");
+  const handleGarmentUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setGarmentFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setGarmentPreview(e.target?.result as string);
+        toast("Garment uploaded.");
+      };
+      reader.readAsDataURL(file);
+      // Clear any URL if file chosen
+      setGarmentUrlInput("");
+      // Clear selected sample outfit so custom garment takes precedence
+      setSelectedOutfit(null);
+    }
+  };
+
+  const handleTryOn = async () => {
+    const hasGarment = !!garmentFile || !!garmentUrlInput || !!selectedOutfit;
+    if (!hasGarment || (tabValue === 'upload' && !selectedImage)) {
+      toast("Provide a photo and select/upload a garment (or paste URL).");
       return;
     }
-    toast("Outfit applied. Adjust sliders to fit.");
+
+    try {
+      setIsProcessing(true);
+      setResultImage(null);
+
+      // Only upload mode is implemented for backend try-on in this snippet
+      if (tabValue !== 'upload' || !selectedImage) {
+        toast("Video mode processing not implemented in this build.");
+        setIsProcessing(false);
+        return;
+      }
+
+      const userFile = dataURLToFile(selectedImage, "user.png");
+
+      const outfitUrl = selectedOutfit ? sampleOutfits.find(o => o.id.toString() === selectedOutfit)?.image : undefined;
+      let garmentToSendFile: File | undefined = undefined;
+      let garmentToSendUrl: string | undefined = undefined;
+
+      if (garmentFile) {
+        garmentToSendFile = garmentFile;
+      } else if (garmentUrlInput) {
+        garmentToSendUrl = garmentUrlInput;
+      } else if (outfitUrl) {
+        // Fallback to sample outfit; prefer sending URL to avoid CORS file fetch issues
+        garmentToSendUrl = outfitUrl;
+      }
+
+      const apiBaseUrl = import.meta.env.VITE_TRYON_API_URL as string;
+      if (!apiBaseUrl) {
+        throw new Error("VITE_TRYON_API_URL is not set");
+      }
+
+      const result = await postTryOn({
+        apiBaseUrl,
+        userImageFile: userFile,
+        garmentImageFile: garmentToSendFile,
+        garmentUrl: garmentToSendUrl,
+        extras: { fit_strength: 0.8 },
+      });
+
+      const finalImage = result.image_url ?? result.image_base64 ?? null;
+      if (!finalImage) {
+        throw new Error("Backend returned no image");
+      }
+      setResultImage(finalImage);
+      toast("Try-on generated!");
+    } catch (err: any) {
+      console.error(err);
+      toast(err.message || "Failed to process try-on");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleReset = () => {
@@ -92,6 +170,20 @@ const TryOn = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabValue]);
 
+  // Accept garment from navigation state
+  useEffect(() => {
+    const garmentUrlFromState: string | undefined = location?.state?.garmentUrl;
+    if (garmentUrlFromState) {
+      setGarmentUrlInput(garmentUrlFromState);
+      setGarmentPreview(garmentUrlFromState);
+      setGarmentFile(null);
+      setSelectedOutfit(null);
+      // clear state so back/forward doesn't reapply unexpectedly
+      navigate(location.pathname, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Layout>
       <div className="container px-4 py-8">
@@ -104,7 +196,7 @@ const TryOn = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Upload Section */}
           <Card className="gradient-card border-border shadow-card">
             <CardHeader>
@@ -256,6 +348,65 @@ const TryOn = () => {
             </CardContent>
           </Card>
 
+          {/* Garment Section */}
+          <Card className="gradient-card border-border shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Upload className="h-5 w-5 text-primary" />
+                Garment
+              </CardTitle>
+              <CardDescription>
+                Upload a garment image or paste a URL. This overrides sample selection.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors"
+                  onClick={() => garmentFileInputRef.current?.click()}
+                >
+                  {garmentPreview ? (
+                    <div className="space-y-2">
+                      <img src={garmentPreview} alt="Garment preview" className="mx-auto max-h-40 rounded" />
+                      <p className="text-sm text-muted-foreground">Click to change garment</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="mx-auto h-10 w-10 text-muted-foreground" />
+                      <p className="text-foreground font-medium">Click to upload garment</p>
+                      <p className="text-sm text-muted-foreground">PNG, JPG up to 10MB</p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={garmentFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleGarmentUpload}
+                  className="hidden"
+                />
+
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Or paste garment image URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://example.com/garment.png"
+                    value={garmentUrlInput}
+                    onChange={(e) => {
+                      setGarmentUrlInput(e.target.value);
+                      if (e.target.value) {
+                        setGarmentPreview(e.target.value);
+                        setGarmentFile(null);
+                        setSelectedOutfit(null);
+                      }
+                    }}
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Outfit Selection */}
           <Card className="gradient-card border-border shadow-card">
             <CardHeader>
@@ -278,8 +429,8 @@ const TryOn = () => {
                         : "border-transparent hover:border-border"
                     }`}
                     onClick={() => {
-                      setSelectedOutfit(outfit.id.toString());
-                      toast(`Selected: ${outfit.name}`);
+                      // Navigate to catalog filtered by category
+                      navigate(`/catalog/${outfit.category}`);
                     }}
                   >
                     <img
@@ -313,7 +464,7 @@ const TryOn = () => {
         <div className="flex justify-center gap-4 mt-8">
           <Button
             onClick={handleTryOn}
-            disabled={!selectedOutfit || (tabValue === 'upload' && !selectedImage) || isProcessing}
+            disabled={(!garmentFile && !garmentUrlInput && !selectedOutfit) || (tabValue === 'upload' && !selectedImage) || isProcessing}
             size="lg"
             className="gradient-primary hover:shadow-glow transition-all btn-glow px-8"
           >
@@ -354,6 +505,19 @@ const TryOn = () => {
                 <p className="text-muted-foreground">
                   Our AI is analyzing your photo and applying the selected outfit...
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {resultImage && !isProcessing && (
+          <Card className="mt-8 gradient-card border-border shadow-card">
+            <CardHeader>
+              <CardTitle className="text-center text-foreground">Your Try-On Result</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="w-full flex justify-center">
+                <img src={resultImage} alt="Try-on result" className="max-h-[28rem] rounded-lg shadow-card" />
               </div>
             </CardContent>
           </Card>
