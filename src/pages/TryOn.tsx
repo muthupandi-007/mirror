@@ -429,8 +429,12 @@ const TryOn = () => {
                         : "border-transparent hover:border-border"
                     }`}
                     onClick={() => {
-                      // Navigate to catalog filtered by category
-                      navigate(`/catalog/${outfit.category}`);
+                      const id = outfit.id.toString();
+                      setSelectedOutfit((prev) => (prev === id ? null : id));
+                      // Clear custom garment inputs when selecting a sample outfit
+                      setGarmentFile(null);
+                      setGarmentUrlInput("");
+                      setGarmentPreview(null);
                     }}
                   >
                     <img
